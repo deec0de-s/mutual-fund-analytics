@@ -27,3 +27,6 @@ Observations:
 
 * Datasets loaded successfully without critical errors.
 * Further AMFI code validation and anomaly analysis will be completed in subsequent project phases.
+
+AMFI Validation:
+All AMFI codes from fund_master were successfully validated against nav_history.
