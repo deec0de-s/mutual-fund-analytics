@@ -1,0 +1,484 @@
+from docx import Document
+from docx.shared import Inches, Pt
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.enum.section import WD_SECTION
+from pathlib import Path
+
+# ============================================================
+# D7 — FINAL REPORT GENERATOR
+# ============================================================
+
+PROJECT_ROOT = Path.cwd()
+REPORTS = PROJECT_ROOT / "reports"
+PROCESSED = PROJECT_ROOT / "data" / "processed"
+
+doc = Document()
+
+# ------------------------------------------------------------
+# PAGE SETUP
+# ------------------------------------------------------------
+
+section = doc.sections[0]
+section.top_margin = Inches(0.7)
+section.bottom_margin = Inches(0.7)
+section.left_margin = Inches(0.8)
+section.right_margin = Inches(0.8)
+
+# ------------------------------------------------------------
+# DEFAULT FONT
+# ------------------------------------------------------------
+
+styles = doc.styles
+
+styles["Normal"].font.name = "Arial"
+styles["Normal"].font.size = Pt(10.5)
+
+styles["Title"].font.name = "Arial"
+styles["Title"].font.size = Pt(24)
+
+styles["Heading 1"].font.name = "Arial"
+styles["Heading 1"].font.size = Pt(17)
+
+styles["Heading 2"].font.name = "Arial"
+styles["Heading 2"].font.size = Pt(13)
+
+# ------------------------------------------------------------
+# TITLE PAGE
+# ------------------------------------------------------------
+
+title = doc.add_paragraph()
+title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+run = title.add_run(
+    "MUTUAL FUND ANALYTICS\n"
+)
+run.bold = True
+run.font.size = Pt(24)
+
+run = title.add_run(
+    "Performance, Risk & Investor Behaviour Analysis"
+)
+run.bold = True
+run.font.size = Pt(18)
+
+doc.add_paragraph("\n")
+
+p = doc.add_paragraph()
+p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+p.add_run(
+    "Bluestock Mutual Fund Analytics Capstone Project"
+).bold = True
+
+doc.add_paragraph("\n")
+
+p = doc.add_paragraph()
+p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+p.add_run(
+    "Analysis of 40 Mutual Fund Schemes\n"
+    "Performance Analytics • Risk Metrics • Investor Analytics • Recommendations"
+)
+
+doc.add_page_break()
+
+# ------------------------------------------------------------
+# 1. EXECUTIVE SUMMARY
+# ------------------------------------------------------------
+
+doc.add_heading("1. Executive Summary", level=1)
+
+doc.add_paragraph(
+    "This project develops an end-to-end mutual fund analytics solution "
+    "covering data ingestion, cleaning, exploratory analysis, performance "
+    "measurement, risk analytics, investor behaviour analysis and fund "
+    "recommendation. The analysis uses 40 mutual fund schemes and multiple "
+    "supporting datasets covering NAV history, fund information, AUM, SIP "
+    "inflows, investor transactions, portfolio holdings and benchmark indices."
+)
+
+doc.add_paragraph(
+    "Performance was evaluated using CAGR, Sharpe Ratio, Sortino Ratio, "
+    "Alpha, Beta and Maximum Drawdown. Advanced risk analysis included "
+    "Historical VaR, CVaR, rolling 90-day Sharpe Ratio and sector "
+    "concentration using the Herfindahl-Hirschman Index (HHI)."
+)
+
+doc.add_paragraph(
+    "Investor analytics identified 1,362 investors with at least six SIP "
+    "transactions. Of these, 1,332 investors were classified as at-risk "
+    "based on an average SIP gap exceeding 35 days, resulting in an "
+    "at-risk rate of 97.80%."
+)
+
+# ------------------------------------------------------------
+# 2. INTRODUCTION
+# ------------------------------------------------------------
+
+doc.add_heading("2. Introduction", level=1)
+
+doc.add_paragraph(
+    "Mutual fund investment generates large volumes of financial and "
+    "investor-level data. Analysing this data can help identify fund "
+    "performance patterns, understand investment risk, evaluate investor "
+    "behaviour and support data-driven fund selection."
+)
+
+doc.add_paragraph(
+    "The objective of this project is to build a complete analytics "
+    "pipeline that transforms raw mutual fund data into actionable "
+    "performance, risk and investor insights."
+)
+
+# ------------------------------------------------------------
+# 3. PROJECT OBJECTIVES
+# ------------------------------------------------------------
+
+doc.add_heading("3. Project Objectives", level=1)
+
+objectives = [
+    "Build a reliable ETL pipeline for mutual fund datasets.",
+    "Clean and validate historical NAV and transactional data.",
+    "Perform exploratory data analysis across fund and investor datasets.",
+    "Calculate performance and risk-adjusted performance metrics.",
+    "Analyse investor cohorts and SIP continuity.",
+    "Calculate VaR, CVaR and portfolio concentration.",
+    "Develop a simple risk-based fund recommender.",
+    "Create a dashboard-ready analytical data foundation.",
+    "Generate business insights for investors and fund analysts."
+]
+
+for item in objectives:
+    doc.add_paragraph(item, style="List Bullet")
+
+# ------------------------------------------------------------
+# 4. DATASET DESCRIPTION
+# ------------------------------------------------------------
+
+doc.add_heading("4. Dataset Description", level=1)
+
+doc.add_paragraph(
+    "The project contains 10 primary datasets covering fund master data, "
+    "NAV history, fund-house AUM, SIP inflows, category inflows, industry "
+    "folio counts, scheme performance, investor transactions, portfolio "
+    "holdings and benchmark indices."
+)
+
+table = doc.add_table(rows=1, cols=2)
+table.style = "Table Grid"
+
+hdr = table.rows[0].cells
+hdr[0].text = "Dataset"
+hdr[1].text = "Purpose"
+
+datasets = [
+    ("Fund Master", "Fund metadata, category, benchmark, expense ratio and risk category"),
+    ("NAV History", "Historical daily NAV observations"),
+    ("AUM by Fund House", "Fund-house level assets under management"),
+    ("Monthly SIP Inflows", "Monthly SIP investment trends"),
+    ("Category Inflows", "Category-level investment flows"),
+    ("Industry Folio Count", "Investor folio distribution"),
+    ("Scheme Performance", "Fund performance information"),
+    ("Investor Transactions", "Investor-level transaction history"),
+    ("Portfolio Holdings", "Fund holdings and sector weights"),
+    ("Benchmark Indices", "Benchmark index performance")
+]
+
+for name, purpose in datasets:
+    row = table.add_row().cells
+    row[0].text = name
+    row[1].text = purpose
+
+# ------------------------------------------------------------
+# 5. DATA ENGINEERING
+# ------------------------------------------------------------
+
+doc.add_heading("5. Data Engineering and ETL", level=1)
+
+doc.add_paragraph(
+    "The data engineering stage loads raw datasets, performs validation "
+    "and cleaning, and stores processed datasets for downstream analytics. "
+    "The project uses structured file paths and separates raw, processed "
+    "and reporting outputs."
+)
+
+doc.add_paragraph(
+    "The processed layer contains cleaned datasets including the cleaned "
+    "NAV history, scheme performance and investor transaction datasets."
+)
+
+# ------------------------------------------------------------
+# 6. EXPLORATORY DATA ANALYSIS
+# ------------------------------------------------------------
+
+doc.add_heading("6. Exploratory Data Analysis", level=1)
+
+doc.add_paragraph(
+    "Exploratory analysis examined NAV trends, AUM growth, SIP inflows, "
+    "category-level flows and investor transaction behaviour. These analyses "
+    "provide context for understanding fund performance and investor activity."
+)
+
+# ------------------------------------------------------------
+# 7. PERFORMANCE ANALYTICS
+# ------------------------------------------------------------
+
+doc.add_heading("7. Performance Analytics", level=1)
+
+doc.add_heading("7.1 CAGR", level=2)
+
+doc.add_paragraph(
+    "Compound Annual Growth Rate was calculated to evaluate annualised "
+    "fund growth over the available investment period. CAGR provides a "
+    "standardised measure for comparing long-term performance across schemes."
+)
+
+doc.add_heading("7.2 Sharpe Ratio", level=2)
+
+doc.add_paragraph(
+    "The Sharpe Ratio measures risk-adjusted return by comparing excess "
+    "return against return volatility. A higher Sharpe Ratio indicates "
+    "better risk-adjusted performance."
+)
+
+doc.add_heading("7.3 Sortino Ratio", level=2)
+
+doc.add_paragraph(
+    "The Sortino Ratio focuses specifically on downside volatility rather "
+    "than total volatility, making it useful for evaluating performance "
+    "relative to negative-return risk."
+)
+
+doc.add_heading("7.4 Alpha and Beta", level=2)
+
+doc.add_paragraph(
+    "Alpha and Beta were estimated using regression of fund returns against "
+    "Nifty 100 benchmark returns. Alpha represents benchmark-adjusted "
+    "performance while Beta measures sensitivity to benchmark movements."
+)
+
+doc.add_heading("7.5 Maximum Drawdown", level=2)
+
+doc.add_paragraph(
+    "Maximum Drawdown measures the largest decline from a historical "
+    "running peak in NAV. It provides an important measure of downside "
+    "risk and potential loss experienced by investors."
+)
+
+# ------------------------------------------------------------
+# 8. ADVANCED RISK ANALYTICS
+# ------------------------------------------------------------
+
+doc.add_heading("8. Advanced Analytics and Risk Metrics", level=1)
+
+doc.add_heading("8.1 Historical VaR and CVaR", level=2)
+
+doc.add_paragraph(
+    "Historical Value at Risk at the 95% confidence level was calculated "
+    "using the 5th percentile of daily returns. Conditional VaR was then "
+    "calculated as the average return below the VaR threshold."
+)
+
+doc.add_paragraph(
+    "The SBI Small Cap Fund - Direct Plan - Growth (AMFI 119599) recorded "
+    "the largest downside VaR in the analysed results at approximately "
+    "-2.69%. Its CVaR was approximately -3.24%."
+)
+
+doc.add_heading("8.2 Rolling Sharpe Ratio", level=2)
+
+doc.add_paragraph(
+    "A 90-day rolling Sharpe Ratio was calculated to observe how "
+    "risk-adjusted performance changes over time. Five key funds were "
+    "selected for comparison."
+)
+
+doc.add_heading("8.3 Sector HHI", level=2)
+
+doc.add_paragraph(
+    "The Herfindahl-Hirschman Index was calculated using sector portfolio "
+    "weights. Higher HHI indicates greater concentration, while lower HHI "
+    "indicates greater diversification."
+)
+
+doc.add_paragraph(
+    "Axis Bluechip Fund - Regular - Growth recorded the highest sector HHI "
+    "among the analysed equity funds at 0.2968. UTI Mid Cap Fund - Regular "
+    "- Growth recorded the lowest HHI at 0.1240."
+)
+
+# ------------------------------------------------------------
+# 9. INVESTOR ANALYTICS
+# ------------------------------------------------------------
+
+doc.add_heading("9. Investor and SIP Analytics", level=1)
+
+doc.add_heading("9.1 Investor Cohort Analysis", level=2)
+
+doc.add_paragraph(
+    "Investors were grouped according to their first transaction year. "
+    "The 2024 cohort recorded approximately ₹225.81 crore in total "
+    "investments, compared with approximately ₹1.90 crore for the 2025 cohort."
+)
+
+doc.add_paragraph(
+    "The average SIP amount was approximately ₹10,997 for the 2024 cohort "
+    "and ₹13,505 for the 2025 cohort."
+)
+
+doc.add_heading("9.2 SIP Continuity", level=2)
+
+doc.add_paragraph(
+    "Among investors with six or more SIP transactions, 1,362 investors "
+    "were analysed. 1,332 investors were classified as at-risk because "
+    "their average SIP transaction gap exceeded 35 days."
+)
+
+doc.add_paragraph(
+    "This produced an at-risk rate of 97.80% and a regular SIP continuity "
+    "rate of only 2.20%. This is a significant finding for investor "
+    "retention and engagement analysis."
+)
+
+# ------------------------------------------------------------
+# 10. FUND RECOMMENDER
+# ------------------------------------------------------------
+
+doc.add_heading("10. Fund Recommendation System", level=1)
+
+doc.add_paragraph(
+    "A simple rule-based recommender was developed using investor risk "
+    "appetite and Sharpe Ratio. Funds are filtered according to their "
+    "risk category and ranked by Sharpe Ratio."
+)
+
+table = doc.add_table(rows=1, cols=4)
+table.style = "Table Grid"
+
+hdr = table.rows[0].cells
+hdr[0].text = "Risk"
+hdr[1].text = "Fund"
+hdr[2].text = "Risk Category"
+hdr[3].text = "Sharpe"
+
+recommendations = [
+    ("Low", "ICICI Pru Liquid Fund - Regular - Growth", "Low", "0.4957"),
+    ("Moderate", "Mirae Asset Large Cap Fund - Regular - Growth", "Moderate", "1.4483"),
+    ("High", "DSP Small Cap Fund - Regular - Growth", "Very High", "0.9498")
+]
+
+for risk, fund, category, sharpe in recommendations:
+    row = table.add_row().cells
+    row[0].text = risk
+    row[1].text = fund
+    row[2].text = category
+    row[3].text = sharpe
+
+# ------------------------------------------------------------
+# 11. KEY FINDINGS
+# ------------------------------------------------------------
+
+doc.add_heading("11. Key Findings", level=1)
+
+findings = [
+    "The project successfully analysed 40 mutual fund schemes.",
+    "Risk-adjusted performance varies considerably across schemes.",
+    "SBI Small Cap Fund - Direct Plan - Growth showed significant downside risk according to Historical VaR.",
+    "Axis Bluechip Fund - Regular - Growth showed the highest sector concentration among analysed equity funds.",
+    "The 2024 investor cohort contributed substantially more total investment than the 2025 cohort.",
+    "SIP continuity represents a major concern, with 97.80% of qualifying investors classified as at-risk.",
+    "Mirae Asset Large Cap Fund - Regular - Growth achieved the highest Sharpe Ratio among the Moderate-risk recommendations."
+]
+
+for item in findings:
+    doc.add_paragraph(item, style="List Bullet")
+
+# ------------------------------------------------------------
+# 12. LIMITATIONS
+# ------------------------------------------------------------
+
+doc.add_heading("12. Limitations", level=1)
+
+limitations = [
+    "The analysis is dependent on the quality and coverage of the supplied datasets.",
+    "Historical performance does not guarantee future returns.",
+    "The recommender is a simple risk-category and Sharpe-based model and is not financial advice.",
+    "Investor cohort results depend on the transaction period available in the dataset.",
+    "The dashboard component is planned separately and is not included in this report version."
+]
+
+for item in limitations:
+    doc.add_paragraph(item, style="List Bullet")
+
+# ------------------------------------------------------------
+# 13. FUTURE SCOPE
+# ------------------------------------------------------------
+
+doc.add_heading("13. Future Scope", level=1)
+
+future = [
+    "Complete the interactive Power BI dashboard with slicers.",
+    "Automate daily NAV data ingestion.",
+    "Build a Streamlit alternative dashboard.",
+    "Add Monte Carlo NAV simulation.",
+    "Implement Markowitz portfolio optimisation.",
+    "Develop automated email-based performance reporting.",
+    "Improve the recommender using additional risk and investor suitability features."
+]
+
+for item in future:
+    doc.add_paragraph(item, style="List Bullet")
+
+# ------------------------------------------------------------
+# 14. CONCLUSION
+# ------------------------------------------------------------
+
+doc.add_heading("14. Conclusion", level=1)
+
+doc.add_paragraph(
+    "The Mutual Fund Analytics project demonstrates an end-to-end "
+    "data analytics workflow for analysing mutual fund performance, "
+    "risk and investor behaviour. The project integrates data engineering, "
+    "statistical analysis, financial metrics and recommendation logic "
+    "to transform raw datasets into actionable insights."
+)
+
+doc.add_paragraph(
+    "The analysis highlights the importance of evaluating funds using "
+    "multiple dimensions rather than relying only on returns. Risk-adjusted "
+    "metrics, downside risk, drawdowns, diversification and investor "
+    "behaviour provide complementary perspectives for decision-making."
+)
+
+# ------------------------------------------------------------
+# 15. TOOLS
+# ------------------------------------------------------------
+
+doc.add_heading("15. Tools and Technologies", level=1)
+
+tools = [
+    "Python",
+    "Pandas",
+    "NumPy",
+    "SciPy",
+    "Matplotlib",
+    "Plotly",
+    "SQLite",
+    "Jupyter Notebook",
+    "Power BI",
+    "Git / GitHub"
+]
+
+for tool in tools:
+    doc.add_paragraph(tool, style="List Bullet")
+
+# ------------------------------------------------------------
+# SAVE
+# ------------------------------------------------------------
+
+output_path = REPORTS / "Final_Report.docx"
+
+doc.save(output_path)
+
+print("=" * 60)
+print("✅ FINAL REPORT CREATED")
+print("=" * 60)
+print(output_path)
